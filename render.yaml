@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: shl-assessment-agent
+    env: ruby
+    buildCommand: bundle install
+    startCommand: ruby server.rb
+    healthCheckPath: /health
+    envVars:
+      - key: RACK_ENV
+        value: production
