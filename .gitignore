@@ -2,3 +2,5 @@ catalog_cache.json
 *.log
 tmp/
 vendor/bundle
+
+.bundle/
