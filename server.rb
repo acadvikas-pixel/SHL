@@ -6,6 +6,7 @@ require 'webrick'
 require 'json'
 require 'net/http'
 require 'uri'
+require 'timeout'
 
 require_relative 'catalog'
 require_relative 'agent'

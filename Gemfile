@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '>= 2.6.0'
+ruby '>= 3.1.0'
 
-gem 'nokogiri', '~> 1.13'
+gem 'webrick'
+gem 'nokogiri'
