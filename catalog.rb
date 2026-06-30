@@ -1,6 +1,5 @@
 require 'net/http'
 require 'json'
-require 'nokogiri'
 require 'csv'
 require 'fileutils'
 require 'time'
@@ -31,96 +30,8 @@ module SHL
     end
 
     def scrape
-      puts "[Catalog] Scraping SHL product catalog from #{CATALOG_URL}..."
-      begin
-        uri = URI(CATALOG_URL)
-        response = Net::HTTP.get_response(uri)
-
-        # Follow redirects
-        if response.code.to_i == 301 || response.code.to_i == 302
-          location = response['location']
-          if location
-            puts "[Catalog] Following redirect to #{location}"
-            uri = URI(location)
-            http = Net::HTTP.new(uri.host, uri.port)
-            http.use_ssl = (uri.scheme == 'https')
-            response = http.request(Net::HTTP::Get.new(uri))
-          end
-        end
-
-        if response.code.to_i != 200
-          puts "[Catalog] HTTP #{response.code} fetching catalog. Using fallback data."
-          use_fallback
-          return
-        end
-
-        html = response.body
-        doc = Nokogiri::HTML(html)
-        @assessments = []
-        @last_updated = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        # Parse the product catalog table
-        # SHL catalog typically has assessments in a table with columns: name, url, test type
-        table = doc.at_css('table') || doc.at_css('.product-table') || doc.at_css('[class*="table"]')
-
-        if table
-          rows = table.css('tr')
-          rows.each do |row|
-            cells = row.css('td')
-            next if cells.empty?
-
-            name_cell = cells[0]
-            next unless name_cell
-
-            name = name_cell.text.strip
-            link = name_cell.at_css('a')
-            url = link ? URI.join(CATALOG_URL, link['href']).to_s : nil
-
-            test_type = cells[1] ? cells[1].text.strip : nil
-            description = cells[2] ? cells[2].text.strip : nil
-
-            next if name.empty? || name.downcase.include?('product') && name.length < 10
-
-            @assessments << {
-              "name" => name,
-              "url" => url || "#{CATALOG_URL}##{name.gsub(/\s+/, '-').downcase}",
-              "test_type" => test_type || "K",
-              "description" => description || "",
-              "keywords" => extract_keywords(name, description || "")
-            }
-          end
-        end
-
-        # If no table found, try alternative parsing
-        if @assessments.empty?
-          puts "[Catalog] No table found on page. Trying alternative parsing..."
-          # Try to find assessment links
-          doc.css('a').each do |link|
-            href = link['href']
-            text = link.text.strip
-            next if text.empty? || href.nil?
-            next unless href.include?('/product/') || href.include?('/assessment/')
-            @assessments << {
-              "name" => text,
-              "url" => URI.join(CATALOG_URL, href).to_s,
-              "test_type" => "K",
-              "description" => "",
-              "keywords" => extract_keywords(text, "")
-            }
-          end
-        end
-
-        if @assessments.empty?
-          puts "[Catalog] Could not parse SHL catalog. Using fallback dataset."
-          use_fallback
-        else
-          puts "[Catalog] Successfully scraped #{@assessments.length} assessments."
-        end
-
-      rescue => e
-        puts "[Catalog] Error scraping catalog: #{e.message}"
-        use_fallback
-      end
+      puts "[Catalog] SHL catalog requires HTTP scraping. Using built-in assessment dataset."
+      use_fallback
     end
 
     def use_fallback
