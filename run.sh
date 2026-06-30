@@ -9,11 +9,11 @@ case "${1:-server}" in
     echo "Starting SHL Assessment Agent API Server..."
     echo "Health check: http://localhost:$PORT/health"
     echo "Chat endpoint: POST http://localhost:$PORT/chat"
-    ruby -e "require_relative 'server'; SHL::APIServer.new.start"
+    bundle exec ruby -e "require_relative 'server'; SHL::APIServer.new.start"
     ;;
   test)
     echo "Running evaluation tests against server at http://localhost:$PORT"
-    ruby -e "require_relative 'test_traces'; SHL::TestTraces::Evaluator.new('http://localhost:$PORT').run_all"
+    bundle exec ruby -e "require_relative 'test_traces'; SHL::TestTraces::Evaluator.new('http://localhost:$PORT').run_all"
     ;;
   eval)
     echo "Running evaluation tests against external URL..."
